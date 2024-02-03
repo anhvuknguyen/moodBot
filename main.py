@@ -1,4 +1,6 @@
 from discord.ext import commands
+from openai import OpenAI
 
-BOT_TOKEN = "MTIwMzIzMTc1ODAxNjA1NzM2NQ.G0QNjl.UsCsq_XFQwPzcIP3AT3ACqvVQuchIS7PbnZgMY"
-CHANNEL_ID = 1203237203627737142
+client = OpenAI(
+  organization='moodBotBrain',
+)
