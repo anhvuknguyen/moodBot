@@ -19,11 +19,22 @@ async def on_ready():
     channel = bot.get_channel(CHANNEL_ID)
     await channel.send("its because im moodbot")
 
+
 @bot.command()
 async def hello(ctx):
-    await ctx.send("Hello!")
-
+    await ctx.send("Hello world")
+    
+@bot.command()
 async def mood(ctx):
     await ctx.send("You are sad")
+
+@bot.event
+async def on_message(message):
+    if message.author == bot.user:
+        return
+    
+    await message.channel.send("Yo")
+
+
 
 bot.run(BOT_TOKEN)
