@@ -28,12 +28,12 @@ bot = commands.Bot(command_prefix = "mb!", intents=discord.Intents.all())
 @bot.event
 async def on_ready():
     channel = bot.get_channel(CHANNEL_ID)
-    await channel.send("its because im moodbot")
+    await channel.send("moodbot online motherfucker")
 
 
 @bot.command()
 async def hello(ctx):
-    await ctx.send("Hello world")
+    await ctx.send("Hello world "+ getAuthor(ctx).mention)
     
 @bot.command()
 async def mood(ctx, *arr):
@@ -67,7 +67,26 @@ async def mood(ctx, *arr):
 async def letter(ctx, messages):
     await ctx.send(messages)
 
-##
+@bot.command()
+async def getMsg(ctx):
+    channelID = getChannelId(ctx)
+    string =""
+    channel = bot.get_channel(channelID)
+    async for msg in channel.history(limit=100):
+        if msg.author.id == getAuthor(ctx).id:
+            string = string +" "+ msg.content
+    await ctx.send(string)
+
+def getChannelId(ctx):
+    return ctx.message.channel.id
+def getAuthor(ctx):
+    return ctx.message.author
+
+def getMessages(ctx):
+    ret = ""
+    
+    
+    return ret
 
 
 bot.run(BOT_TOKEN)
