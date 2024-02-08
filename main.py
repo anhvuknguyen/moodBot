@@ -2,6 +2,7 @@ import discord
 import openai
 from discord.ext import commands
 from openai import OpenAI
+import time
 #MAKE THIS HACKK PROOF
 #OPENAI_API_KEY = "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"
 BOT_TOKEN = "MTIwMzIzMTc1ODAxNjA1NzM2NQ.G0QNjl.UsCsq_XFQwPzcIP3AT3ACqvVQuchIS7PbnZgMY"
@@ -37,31 +38,41 @@ async def hello(ctx):
     
 @bot.command()
 async def mood(ctx, *arr):
-    msg = ""
-    for i in arr:
-        msg += i + " "
-
-    message = client.beta.threads.messages.create(
-        thread_id = thread.id,
-        role = "user",
-        content = "What emotion is this message displaying? " + msg
-    )
-    print("What emotion is this message displaying " + msg)
-    
-    run = client.beta.threads.runs.create(
-        thread_id = thread.id,
-        assistant_id = assistant.id
-    )
-    run = client.beta.threads.runs.retrieve(
-        thread_id = thread.id,
-        run_id = run.id
-    )
-    messages = client.beta.threads.messages.list(
-        thread_id = thread.id
-    )
-    for message in reversed(messages.data):
-        await ctx.send(message.role + ": " + message.content[0].text.value)
+    try:
+        msg = ""
+        for i in arr:
+            msg += i + " "
         
+        #Send the question to the thread
+        message = client.beta.threads.messages.create(
+            thread_id=thread.id,
+            role="user",
+            content="What emotion is this message display?" + msg
+        )
+        print("What emotion is this message displaying " + msg)
+        
+        #Execute the thread
+        run = client.beta.threads.runs.create(
+            thread_id = thread.id,
+            assistant_id = assistant.id
+        )
+
+        #Retrive the run result
+        run = client.beta.threads.runs.retrieve(
+            thread_id = thread.id,
+            run_id = run.id
+        )
+        time.sleep(1)
+
+        #Get the last message from the thread which is assumed to be the answer
+        messages = client.beta.threads.messages.list(
+            thread_id = thread.id
+        )
+        for message in reversed(messages.data):
+            await ctx.send(message.role + ": " + message.content[0].text.value)
+    except Exception as e:
+        print(f"Error: {e}")
+    
 
 @bot.command()
 async def letter(ctx, messages):
