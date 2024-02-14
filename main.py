@@ -16,11 +16,44 @@ assistant = client.beta.assistants.create(
     instructions="You are a therapist. Read messages and determine the emotion felt",
     tools=[{"type": "code_interpreter"}],
     model="gpt-3.5-turbo-0125"
+    
 )
 
 
-thread = client.beta.threads.create()
-print(thread)
+
+
+def messageAssistant(msg):
+    thread = client.beta.threads.create()
+    message = client.beta.threads.messages.create(
+            thread_id=thread.id,
+            role="user",
+            content="What emotion is this message display?" + msg
+        )
+        
+    #Execute the thread
+    run = client.beta.threads.runs.create(
+        thread_id = thread.id,
+        assistant_id = assistant.id,
+        model="gpt-3.5-turbo-0125",
+        instructions = "Respond with an emotion in this messages. Keep responses one word.",
+        tools=[{"type": "code_interpreter"}]
+    )
+    time.sleep(3)
+    #Retrive the run result
+    run = client.beta.threads.runs.retrieve(
+        thread_id = thread.id,
+        run_id = run.id
+    )   
+        #Get the last message from the thread which is assumed to be the answer
+    messages = client.beta.threads.messages.list(
+        thread_id = thread.id
+    )
+    print(messages)
+        #response = r.create_response(assistant, msg)
+        #await ctx.send(response)
+    for message in reversed(messages.data):
+        print(message.role + ": " + message.content[0].text.value)
+    return messages
 
 #client = OpenAI(
 #  organization='moodBotBrain',
@@ -31,7 +64,7 @@ bot = commands.Bot(command_prefix = "mb!", intents=discord.Intents.all())
 @bot.event
 async def on_ready():
     channel = bot.get_channel(CHANNEL_ID)
-    await channel.send("moodbot online motherfucker")
+    await channel.send("MoodBot Online")
 
 
 
@@ -43,45 +76,31 @@ async def hello(ctx):
     
 @bot.command()
 async def mood(ctx, *arr):
-    try:
         msg = ""
         for i in arr:
             msg += i + " "
+        mood = messageAssistant(" "+ msg)
+        for message in reversed(mood.data):
+            await ctx.send(message.role + ": " + message.content[0].text.value)
+            print(message.role + ": " + message.content[0].text.value)
         
         #Send the question to the thread
-        message = client.beta.threads.messages.create(
-            thread_id=thread.id,
-            role="user",
-            content="What emotion is this message display?" + msg
-        )
-        print("What emotion is this message displaying " + msg)
-        
-        #Execute the thread
-        run = client.beta.threads.runs.create(
-            thread_id = thread.id,
-            assistant_id = assistant.id,
-            instructions = "Please respond with an emotion that is being felt in these messages."
-        )
-        time.sleep(1)
-
-        #Retrive the run result
-        run = client.beta.threads.runs.retrieve(
-            thread_id = thread.id,
-            run_id = run.id
-        )   
-
-        #Get the last message from the thread which is assumed to be the answer
-        messages = client.beta.threads.messages.list(
-            thread_id = thread.id
-        )
-        
-        #response = r.create_response(assistant, msg)
-        #await ctx.send(response)
-        for message in reversed(messages.data):
-            print(message.role + ": " + message.content[0].text.value)
-    except Exception as e:
-        print(f"Error: {e}")
-
+@bot.command()
+async def moodPastFive(ctx):
+        messageCall = "mb!"
+        channelID = getChannelId(ctx)
+        string =""
+        channel = bot.get_channel(channelID)
+        async for msg in channel.history(limit=7):
+            if msg.author.id == getAuthor(ctx).id:
+                if messageCall in msg.content:
+                    continue 
+                string = string +" "+ msg.content
+        msg = string
+        mood = messageAssistant(" "+ msg)
+        for message in (mood.data):
+            await ctx.send("Your mood for the last five messages: " + message.content[0].text.value)
+            break
 
 @bot.command()
 async def letter(ctx, messages):
@@ -92,10 +111,10 @@ async def getMsg(ctx):
     channelID = getChannelId(ctx)
     string =""
     channel = bot.get_channel(channelID)
-    async for msg in channel.history(limit=100):
+    async for msg in channel.history(limit=5):
         if msg.author.id == getAuthor(ctx).id:
             string = string +" "+ msg.content
-    await ctx.send(string)
+    return string
 
 def getChannelId(ctx):
     return ctx.message.channel.id
