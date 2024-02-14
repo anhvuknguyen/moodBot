@@ -2,7 +2,9 @@ import discord
 import openai
 from discord.ext import commands
 from openai import OpenAI
+import responses as r
 import time
+
 #MAKE THIS HACKK PROOF
 #OPENAI_API_KEY = "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"
 BOT_TOKEN = "MTIwMzIzMTc1ODAxNjA1NzM2NQ.G0QNjl.UsCsq_XFQwPzcIP3AT3ACqvVQuchIS7PbnZgMY"
@@ -13,7 +15,7 @@ assistant = client.beta.assistants.create(
     name="Therapist",
     instructions="You are a therapist. Read messages and determine the emotion felt",
     tools=[{"type": "code_interpreter"}],
-    model="gpt-3.5-turbo-1106"
+    model="gpt-3.5-turbo-0125"
 )
 
 
@@ -30,6 +32,9 @@ bot = commands.Bot(command_prefix = "mb!", intents=discord.Intents.all())
 async def on_ready():
     channel = bot.get_channel(CHANNEL_ID)
     await channel.send("moodbot online motherfucker")
+
+
+
 
 
 @bot.command()
@@ -54,25 +59,29 @@ async def mood(ctx, *arr):
         #Execute the thread
         run = client.beta.threads.runs.create(
             thread_id = thread.id,
-            assistant_id = assistant.id
+            assistant_id = assistant.id,
+            instructions = "Please respond with an emotion that is being felt in these messages."
         )
+        time.sleep(1)
 
         #Retrive the run result
         run = client.beta.threads.runs.retrieve(
             thread_id = thread.id,
             run_id = run.id
-        )
-        time.sleep(1)
+        )   
 
         #Get the last message from the thread which is assumed to be the answer
         messages = client.beta.threads.messages.list(
             thread_id = thread.id
         )
+        
+        #response = r.create_response(assistant, msg)
+        #await ctx.send(response)
         for message in reversed(messages.data):
-            await ctx.send(message.role + ": " + message.content[0].text.value)
+            print(message.role + ": " + message.content[0].text.value)
     except Exception as e:
         print(f"Error: {e}")
-    
+
 
 @bot.command()
 async def letter(ctx, messages):
