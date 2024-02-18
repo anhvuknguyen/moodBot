@@ -86,18 +86,27 @@ async def mood(ctx, *arr):
         
         #Send the question to the thread
 @bot.command()
-async def moodPastFive(ctx):
+async def moodPastFive(ctx, *arr):
         messageCall = "mb!"
+        userID = ""
+        for i in arr:
+            userID += i + " "
+        userID = userID[userID.index("@")+1:userID.index(">")]
         channelID = getChannelId(ctx)
         string =""
         channel = bot.get_channel(channelID)
-        async for msg in channel.history(limit=7):
-            if msg.author.id == getAuthor(ctx).id:
+        count = 0
+        async for msg in channel.history(limit=500):
+            msgID = str(msg.author.id)
+            if msgID == userID:
                 if messageCall in msg.content:
                     continue 
                 string = string +" "+ msg.content
-        msg = string
-        mood = messageAssistant(" "+ msg)
+                count += 1
+                if count >= 5:
+                    break
+        msg = " " + string 
+        mood = messageAssistant(msg)
         for message in (mood.data):
             await ctx.send("Your mood for the last five messages: " + message.content[0].text.value)
             break
@@ -107,13 +116,26 @@ async def letter(ctx, messages):
     await ctx.send(messages)
 
 @bot.command()
-async def getMsg(ctx):
+async def getMsg(ctx, *arr):
+    userID = ""
+    for i in arr:
+        userID += i + " "
+    userID = userID[userID.index("@")+1:userID.index(">")]
     channelID = getChannelId(ctx)
     string =""
     channel = bot.get_channel(channelID)
-    async for msg in channel.history(limit=5):
-        if msg.author.id == getAuthor(ctx).id:
+    count = 0
+    async for msg in channel.history(limit=500):
+        print(msg.author.id)
+        print(userID)
+        msgID = str(msg.author.id)
+        if msgID == userID:
             string = string +" "+ msg.content
+            print("we are here")
+            count += 1
+            if count >= 5:
+                break
+    print(string)
     return string
 
 def getChannelId(ctx):
