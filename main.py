@@ -3,7 +3,7 @@ import openai
 from discord.ext import commands
 from openai import OpenAI
 import responses as r
-import time
+import asyncio
 
 #MAKE THIS HACKK PROOF
 #OPENAI_API_KEY = "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"
@@ -15,14 +15,10 @@ assistant = client.beta.assistants.create(
     name="Therapist",
     instructions="You are a therapist. Read messages and determine the emotion felt",
     tools=[{"type": "code_interpreter"}],
-    model="gpt-3.5-turbo-0125"
-    
+    model="gpt-3.5-turbo-0125"   
 )
 
-
-
-
-def messageAssistant(msg):
+async def messageAssistant(msg):
     thread = client.beta.threads.create()
     message = client.beta.threads.messages.create(
             thread_id=thread.id,
@@ -38,7 +34,9 @@ def messageAssistant(msg):
         instructions = "Respond with an emotion in this messages. Keep responses one word.",
         tools=[{"type": "code_interpreter"}]
     )
-    time.sleep(3)
+    return thread,message,run
+
+def messageAssistant2(thread,message,run):
     #Retrive the run result
     run = client.beta.threads.runs.retrieve(
         thread_id = thread.id,
@@ -55,20 +53,12 @@ def messageAssistant(msg):
         print(message.role + ": " + message.content[0].text.value)
     return messages
 
-#client = OpenAI(
-#  organization='moodBotBrain',
-#)
-
 bot = commands.Bot(command_prefix = "mb!", intents=discord.Intents.all())
 
 @bot.event
 async def on_ready():
     channel = bot.get_channel(CHANNEL_ID)
     await channel.send("MoodBot Online")
-
-
-
-
 
 @bot.command()
 async def hello(ctx):
@@ -84,7 +74,6 @@ async def mood(ctx, *arr):
             await ctx.send(message.role + ": " + message.content[0].text.value)
             print(message.role + ": " + message.content[0].text.value)
         
-        #Send the question to the thread
 @bot.command()
 async def moodPastFive(ctx, *arr):
         messageCall = "mb!"
@@ -101,12 +90,18 @@ async def moodPastFive(ctx, *arr):
             if msgID == userID:
                 if messageCall in msg.content:
                     continue 
+                if msg.content == "":
+                    continue
+                if "https" in msg.content:
+                    continue
                 string = string +" "+ msg.content
                 count += 1
                 if count >= 5:
                     break
         msg = " " + string 
-        mood = messageAssistant(msg)
+        thread,messageRun,Run = await messageAssistant(msg)
+        await asyncio.sleep(3)
+        mood = messageAssistant2(thread,messageRun,Run)
         for message in (mood.data):
             await ctx.send("Your mood for the last five messages: " + message.content[0].text.value)
             break
@@ -142,12 +137,5 @@ def getChannelId(ctx):
     return ctx.message.channel.id
 def getAuthor(ctx):
     return ctx.message.author
-
-def getMessages(ctx):
-    ret = ""
-    
-    
-    return ret
-
 
 bot.run(BOT_TOKEN)
