@@ -4,12 +4,11 @@ from discord.ext import commands
 from openai import OpenAI
 import responses as r
 import asyncio
+import keys
 
-#MAKE THIS HACKK PROOF
-#OPENAI_API_KEY = "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"
-BOT_TOKEN = "MTIwMzIzMTc1ODAxNjA1NzM2NQ.G0QNjl.UsCsq_XFQwPzcIP3AT3ACqvVQuchIS7PbnZgMY"
-CHANNEL_ID = 1203237203627737142
-client = OpenAI(api_key = "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")
+BOT_TOKEN = keys.BOT_TOKENsec
+CHANNEL_ID = keys.CHANNEL_IDsec
+client = OpenAI(api_key = keys.OPENAI_API_KEYsec)
 
 assistant = client.beta.assistants.create(
     name="Therapist",
