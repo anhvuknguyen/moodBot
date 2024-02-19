@@ -31,7 +31,7 @@ async def messageAssistant(msg):
         thread_id = thread.id,
         assistant_id = assistant.id,
         model="gpt-3.5-turbo-0125",
-        instructions = "Respond with an emotion in this messages. Keep responses one word.",
+        instructions = "Respond with the emotion in this message. Use your vast knowledge on emotions and personality to choose the correct feeling. Keep responses one word, use a complex word.",
         tools=[{"type": "code_interpreter"}]
     )
     return thread,message,run
@@ -64,23 +64,16 @@ async def on_ready():
 async def hello(ctx):
     await ctx.send("Hello world "+ getAuthor(ctx).mention)
     
-@bot.command()
-async def mood(ctx, *arr):
-        msg = ""
-        for i in arr:
-            msg += i + " "
-        mood = messageAssistant(" "+ msg)
-        for message in reversed(mood.data):
-            await ctx.send(message.role + ": " + message.content[0].text.value)
-            print(message.role + ": " + message.content[0].text.value)
         
 @bot.command()
-async def moodPastFive(ctx, *arr):
+async def mood(ctx, *arr):
         messageCall = "mb!"
         userID = ""
         for i in arr:
             userID += i + " "
         userID = userID[userID.index("@")+1:userID.index(">")]
+        if (userID == "714310227008290878"):
+            await ctx.send("I hate you Evan Lin")
         channelID = getChannelId(ctx)
         string =""
         channel = bot.get_channel(channelID)
