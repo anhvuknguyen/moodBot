@@ -6,6 +6,7 @@ import responses as r
 import asyncio
 import keys
 
+#the best bot discord has
 BOT_TOKEN = keys.BOT_TOKENsec
 CHANNEL_ID = keys.CHANNEL_IDsec
 client = OpenAI(api_key = keys.OPENAI_API_KEYsec)
