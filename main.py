@@ -13,7 +13,7 @@ client = OpenAI(api_key = keys.OPENAI_API_KEYsec)
 
 assistant = client.beta.assistants.create(
     name="Therapist",
-    instructions="You are a therapist. Read messages and determine the emotion felt",
+    instructions="You are a therapist. Read messages and determine the emotion felt. If needed uplift the user's emotion.",
     tools=[{"type": "code_interpreter"}],
     model="gpt-3.5-turbo-0125"   
 )
@@ -23,7 +23,7 @@ async def messageAssistant(msg):
     message = client.beta.threads.messages.create(
             thread_id=thread.id,
             role="user",
-            content="What emotion is this message display?" + msg
+            content="What emotion is this message display? Respond with happy phrase if it's negative." + msg
         )
         
     #Execute the thread
@@ -31,7 +31,7 @@ async def messageAssistant(msg):
         thread_id = thread.id,
         assistant_id = assistant.id,
         model="gpt-3.5-turbo-0125",
-        instructions = "Respond with the emotion in this message. Use your vast knowledge on emotions and personality to choose the correct feeling. Keep responses one word, use a complex word.",
+        instructions = "Respond with the emotion in this message. Use your vast knowledge on emotions and personality to choose the correct feeling. Keep responses one word, use a complex word. If the emotion seems to be negative IGNORE the one word response rule, please respond with the emotion and an uplifting phrase.",
         tools=[{"type": "code_interpreter"}]
     )
     return thread,message,run
@@ -72,8 +72,6 @@ async def mood(ctx, *arr):
         for i in arr:
             userID += i + " "
         userID = userID[userID.index("@")+1:userID.index(">")]
-        if (userID == "714310227008290878"):
-            await ctx.send("I hate you Evan Lin")
         channelID = getChannelId(ctx)
         string =""
         channel = bot.get_channel(channelID)
